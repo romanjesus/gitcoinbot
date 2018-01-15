@@ -9,20 +9,24 @@ def index(request):
 
 @csrf_exempt
 def payload(request):
-    # parse request.body bytes into json and parse out relevant info
+    # parse request.body bytes into json and parse out relevant info and
+    # respond with appropriate message
 
     if request.method == "POST":
         requestJSON = json.loads(request.body.decode('utf8'))
 
         if requestJSON['action'] == 'deleted':
-            pass
+            # Gitcoinbot should not process these actions
+            return HttpResponse(status=204)
         else:
             issueURL = requestJSON['comment']['url']
             owner = requestJSON['repository']['owner']['login']
             repo = requestJSON['repository']['name']
             comment_id = requestJSON['comment']['id']
-            commentText = requestJSON['comment']['body']
-            print("Going to try and react with a heart")
-            gitcoinBot.post_issue_comment_reaction(owner, repo, comment_id, 'heart')
+            comment_text = requestJSON['comment']['body']
+            issue_id = requestJSON['issue']['number']
 
-            return True
+            gitcoinBot.determine_response(owner, repo, comment_id,
+                                          comment_text, issue_id)
+
+            return HttpResponse('Gitcoinbot Responded')

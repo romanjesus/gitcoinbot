@@ -18,7 +18,7 @@ v3headers = {
 }
 
 def help_text():
-    help_text_response = "I am @{}, a bot that facilitaes gitcoin bounties.\n".format(settings.GITHUB_API_USER) + \
+    help_text_response = "I am @{}, a bot that facilitates gitcoin bounties.\n".format(settings.GITHUB_API_USER) + \
         "\n" +\
         "<hr>" +\
         "Here are the commands I understand:\n" +\
@@ -87,8 +87,10 @@ def determine_response(owner, repo, comment_id, comment_text, issue_id):
         post_issue_comment_reaction(owner, repo, comment_id, '+1')
         post_issue_comment(owner, repo, issue_id, new_bounty_text())
     elif re.match(claim_regex, comment_text) is not None:
+        post_issue_comment_reaction(owner, repo, comment_id, '+1')
         pass
     elif re.match(approve_regex, comment_text) is not None:
+        post_issue_comment_reaction(owner, repo, comment_id, 'hooray')
         pass
     elif re.match(tip_regex, comment_text) is not None:
         post_issue_comment_reaction(owner, repo, comment_id, 'heart')

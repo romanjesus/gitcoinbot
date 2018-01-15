@@ -17,7 +17,7 @@ v3headers = {
     'Accept': 'application/vnd.github.v3.text-match+json'
 }
 
-def construct_help_text():
+def help_text():
     help_text_response = "I am @{}, a bot that facilitaes gitcoin bounties.\n".format(settings.GITHUB_API_USER) + \
         "\n" +\
         "<hr>" +\
@@ -32,9 +32,25 @@ def construct_help_text():
         "<br>" +\
         "Learn more at: [https://gitcoin.co](https://gitcoin.co)\n" +\
         ":zap::heart:, {}\n".format("@" + settings.GITHUB_API_USER) +\
-        "\n"
+        "\n" +\
+        "PS. Make sure you're logged in to Metamask!"
     return help_text_response
 
+def new_bounty_text():
+    # TODO Need to make the url have params that can autofill the form
+    new_bounty_response = "To create the bounty please [visit this link]({}).\n".format(
+        'https://gitcoin.co/funding/new')
+    return new_bounty_response
+
+def tip_text():
+    # TODO Need to make the url have params that can autofill the form
+    tip_response = "To complete the tip, please [visit this link]({}).".format(
+        'https://gitcoin.co/tip')
+    return tip_response
+
+def confused_text():
+    response = "Sorry I did not understand that request. Please try again"
+    return response
 
 def post_issue_comment(owner, repo, issue_num, comment):
     url = 'https://api.github.com/repos/{}/{}/issues/{}/comments'.format(
@@ -44,7 +60,6 @@ def post_issue_comment(owner, repo, issue_num, comment):
     }
     response = requests.post(url, data=json.dumps(body), auth=_auth)
     return response.json()
-
 
 def post_issue_comment_reaction(owner, repo, comment_id, content):
     url = 'https://api.github.com/repos/{}/{}/issues/comments/{}/reactions'.format(
@@ -67,16 +82,20 @@ def determine_response(owner, repo, comment_id, comment_text, issue_id):
 
     if re.match(help_regex, comment_text) is not None:
         post_issue_comment_reaction(owner, repo, comment_id, '+1')
-        post_issue_comment(owner, repo, issue_id, construct_help_text())
+        post_issue_comment(owner, repo, issue_id, help_text())
     elif re.match(bounty_regex, comment_text) is not None:
-        pass
+        post_issue_comment_reaction(owner, repo, comment_id, '+1')
+        post_issue_comment(owner, repo, issue_id, new_bounty_text())
     elif re.match(claim_regex, comment_text) is not None:
         pass
     elif re.match(approve_regex, comment_text) is not None:
         pass
     elif re.match(tip_regex, comment_text) is not None:
-        pass
+        post_issue_comment_reaction(owner, repo, comment_id, 'heart')
+        post_issue_comment(owner, repo, issue_id, tip_text())
     else:
-        # Sorry I did not understand that response
         pass
+        # Make sure to not respond after gitcoinbot comments...
+        # post_issue_comment_reaction(owner, repo, comment_id, 'confused')
+        # post_issue_comment(owner, repo, issue_id, tip_text())
 
